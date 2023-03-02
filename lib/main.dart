@@ -1,4 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_tex/flutter_tex.dart';
+import 'package:http/http.dart' as http;
+import 'constants.dart';
 
 void main() {
   runApp(const MyApp());
@@ -49,6 +54,16 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  var client = http.Client();
+
+  fetch() async {
+    try {
+      var response = await client.get(Uri.parse(baseUrl));
+      print(response.body);
+    } catch (err) {
+      print(err);
+    }
+  }
 
   void _incrementCounter() {
     setState(() {
@@ -59,6 +74,7 @@ class _MyHomePageState extends State<MyHomePage> {
       // called again, and so nothing would appear to happen.
       _counter++;
     });
+    fetch();
   }
 
   @override
@@ -102,6 +118,10 @@ class _MyHomePageState extends State<MyHomePage> {
               '$_counter',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
+            const TeXView(
+                child: TeXViewDocument(r"""<p>Laplace filter in Image Processing
+                       $$\nabla^2f(x,y) = \frac{\partial^2f(x,y)}{\partial x^2} + \frac{\partial^2f(x,y)}{\partial y^2}$$</p>""",
+                    style: TeXViewStyle.fromCSS("padding: 15px;"))),
           ],
         ),
       ),
