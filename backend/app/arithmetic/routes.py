@@ -1,3 +1,4 @@
+from app.arithmetic import bp as arithmetic
 from app.arithmetic.add import addImages
 from app.arithmetic.subtract import subImages
 from app.arithmetic.multiply import multiplyImages
