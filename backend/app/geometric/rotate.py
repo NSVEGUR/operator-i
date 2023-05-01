@@ -29,9 +29,13 @@ def rotateImage():
         center = (img.shape[0], 0)
     elif point == 3:
         center = (img.shape[0], img.shape[1])
+
+    aspect_ratio = img.shape[0] / img.shape[1]
+    output_width = 960
+    output_height = int(output_width / aspect_ratio)
     rotMat = cv2.getRotationMatrix2D(center=center, angle=angle, scale=1) 
     rotated = cv2.warpAffine(
-    src=img, M=rotMat, dsize=(1*img.shape[0], 4*img.shape[1]))
+    src=img, M=rotMat, dsize=(output_width,output_height))
     imgenc = cv2.imencode('.png', rotated)[1]
     return send_file(BytesIO(imgenc), mimetype="image/gif")
 

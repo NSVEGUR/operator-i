@@ -2,6 +2,7 @@ from app.intro import bp as intro
 from flask import request, send_file
 import numpy as np
 import cv2
+from flask import jsonify
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg','jpeg'])
 
@@ -18,4 +19,4 @@ def imgShape():
     r,c = img.shape
     l = [r,c]
     print(l)
-    return l
+    return jsonify(shape=l)
