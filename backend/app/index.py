@@ -1,9 +1,10 @@
 from flask import Flask
-from app.main import bp as main
-from app.intro import bp as intro
-from app.arithmetic import bp as arithmetic
-from app.geometric import bp as geometric
-from app.spatial import bp as spatial
+from main import bp as main
+from intro import bp as intro
+from arithmetic import bp as arithmetic
+from geometric import bp as geometric
+from spatial import bp as spatial
+
 
 
 app = Flask(__name__)
