@@ -15,13 +15,14 @@ class SpatialScreen extends StatefulWidget {
 }
 
 class _SpatialScreenState extends State<SpatialScreen> {
-  Uint8List? resBinImage;
-  Uint8List? resGrayImage;
-  Uint8List? resAddImage;
-  var resShape;
+  Uint8List? resEqualize;
+  Uint8List? resEnhance;
+  Uint8List? resMatch;
+  Uint8List? resGamma;
+  Uint8List? resLog;
   XFile? image;
 
-  Future<int> retbinaryImage(
+  Future<int> retEqualize(
       {required File file, required String filename}) async {
     ///MultiPart request
     var request = http.MultipartRequest(
@@ -42,37 +43,154 @@ class _SpatialScreenState extends State<SpatialScreen> {
     final resStrem = await request.send();
     final res = await http.Response.fromStream(resStrem);
     setState(() {
-      resBinImage = res.bodyBytes;
+      resEqualize = res.bodyBytes;
     });
     //print("This is response:" + resStrem.toString());
     return resStrem.statusCode;
   }
 
-  uploadBinaryImage() async {
+  uploadEqualize() async {
     image = await ImagePicker().pickImage(source: ImageSource.gallery);
 
     if (image != null) {
       File pickedImage = File(image!.path);
-      await retbinaryImage(
+      await retEqualize(
           file: pickedImage, filename: pickedImage.path.split("/").last);
     }
   }
 
-  Future<int> retgrayImage(
+  Future<int> retContrast(
+      {required File file, required String filename}) async {
+    ///MultiPart request
+    var request = http.MultipartRequest(
+      'POST',
+      Uri.parse("${baseUrl}spatial/enhance"),
+    );
+    Map<String, String> headers = {"Content-type": "multipart/form-data"};
+    request.files.add(
+      http.MultipartFile(
+        'file',
+        file.readAsBytes().asStream(),
+        file.lengthSync(),
+        filename: filename,
+      ),
+    );
+    request.headers.addAll(headers);
+    print("request: $request");
+    final resStrem = await request.send();
+    final res = await http.Response.fromStream(resStrem);
+    setState(() {
+      resEnhance = res.bodyBytes;
+    });
+    //print("This is response:" + resStrem.toString());
+    return resStrem.statusCode;
+  }
+
+  uploadContrast() async {
+    image = await ImagePicker().pickImage(source: ImageSource.gallery);
+
+    if (image != null) {
+      File pickedImage = File(image!.path);
+      await retContrast(
+          file: pickedImage, filename: pickedImage.path.split("/").last);
+    }
+  }
+  Future<int> retLog(
+      {required File file, required String filename}) async {
+    ///MultiPart request
+    var request = http.MultipartRequest(
+      'POST',
+      Uri.parse("${baseUrl}spatial/logtrans"),
+    );
+    Map<String, String> headers = {"Content-type": "multipart/form-data"};
+    request.files.add(
+      http.MultipartFile(
+        'file',
+        file.readAsBytes().asStream(),
+        file.lengthSync(),
+        filename: filename,
+      ),
+    );
+    request.headers.addAll(headers);
+    print("request: $request");
+    final resStrem = await request.send();
+    final res = await http.Response.fromStream(resStrem);
+    setState(() {
+      resLog = res.bodyBytes;
+    });
+    //print("This is response:" + resStrem.toString());
+    return resStrem.statusCode;
+  }
+
+  uploadLog() async {
+    image = await ImagePicker().pickImage(source: ImageSource.gallery);
+
+    if (image != null) {
+      File pickedImage = File(image!.path);
+      await retLog(
+          file: pickedImage, filename: pickedImage.path.split("/").last);
+    }
+  }
+
+    Future<int> retGamma(
+      {required File file, required String filename}) async {
+    ///MultiPart request
+    var request = http.MultipartRequest(
+      'POST',
+      Uri.parse("${baseUrl}spatial/gamma"),
+    );
+    Map<String, String> headers = {"Content-type": "multipart/form-data"};
+    request.files.add(
+      http.MultipartFile(
+        'file',
+        file.readAsBytes().asStream(),
+        file.lengthSync(),
+        filename: filename,
+      ),
+    );
+    Map<String, String> gamma = {"gamma": "3","c":"1"};
+
+    request.fields.addAll(gamma);
+
+
+    request.headers.addAll(headers);
+    print("request: $request");
+    final resStrem = await request.send();
+    final res = await http.Response.fromStream(resStrem);
+    setState(() {
+      resGamma = res.bodyBytes;
+    });
+    //print("This is response:" + resStrem.toString());
+    return resStrem.statusCode;
+  }
+
+  uploadGamma() async {
+    image = await ImagePicker().pickImage(source: ImageSource.gallery);
+
+    if (image != null) {
+      File pickedImage = File(image!.path);
+      await retGamma(
+          file: pickedImage, filename: pickedImage.path.split("/").last);
+    }
+  }
+
+  Future<int> retMatch(
       {required List<File> file, required List<String> filename}) async {
     var request = http.MultipartRequest(
       'POST',
       Uri.parse("${baseUrl}spatial/matching"),
     );
     Map<String, String> headers = {"Content-type": "multipart/form-data"};
-    for (int i = 0; i < file.length; i++){request.files.add(
-      http.MultipartFile(
-        'file$i',
-        file[0].readAsBytes().asStream(),
-        file[0].lengthSync(),
-        filename: filename[0],
-      ),
-    );}
+    for (int i = 0; i < file.length; i++) {
+      request.files.add(
+        http.MultipartFile(
+          'file$i',
+          file[0].readAsBytes().asStream(),
+          file[0].lengthSync(),
+          filename: filename[0],
+        ),
+      );
+    }
 
     request.headers.addAll(headers);
     print("request: $request");
@@ -80,13 +198,13 @@ class _SpatialScreenState extends State<SpatialScreen> {
     print(gresStrem);
     final gres = await http.Response.fromStream(gresStrem);
     setState(() {
-      resGrayImage = gres.bodyBytes;
+      resMatch = gres.bodyBytes;
     });
     //print("This is response:" + resStrem.toString());
     return gres.statusCode;
   }
 
-  uploadGrayImage() async {
+  uploadMatch() async {
     List<File> pickedImage = [];
     List<XFile> image = [];
     image.add((await ImagePicker().pickImage(source: ImageSource.gallery))!);
@@ -101,7 +219,7 @@ class _SpatialScreenState extends State<SpatialScreen> {
       List<String> filenames =
           pickedImage.map((image) => image.path.split("/").last).toList();
 
-      await retgrayImage(file: pickedImage, filename: filenames);
+      await retMatch(file: pickedImage, filename: filenames);
     }
   }
 
@@ -111,108 +229,178 @@ class _SpatialScreenState extends State<SpatialScreen> {
       appBar: AppBar(
         title: const Text('Image Details'),
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-              image: AssetImage("assets/logo.png"), scale: 0.25, opacity: 0.25),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              const SizedBox(
-                height: 10.0,
-              ),
-              SizedBox(
-                height: 40.0,
-                width: 250.0,
-                child: FloatingActionButton.extended(
-                    heroTag: "gray",
-                    icon: const Icon(Icons.upload_file),
-                    onPressed: uploadGrayImage,
-                    label: const Text("Gray")),
-              ),
-              const SizedBox(
-                height: 10.0,
-              ),
-              resGrayImage == null
-                  ? const Text("Upload Image")
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image.file(
-                          File(image!.path),
-                          height: 150.0,
-                          width: 150.0,
-                          semanticLabel: "Original",
-                        ),
-                        Image.memory(
-                          resGrayImage!,
-                          height: 150.0,
-                          width: 150.0,
-                          semanticLabel: "Gray",
-                        ),
-                      ],
-                    ),
-              const SizedBox(
-                height: 10.0,
-              ),
-              SizedBox(
-                height: 40.0,
-                width: 250.0,
-                child: FloatingActionButton.extended(
-                    heroTag: "binary",
-                    icon: const Icon(Icons.upload_file),
-                    onPressed: uploadBinaryImage,
-                    label: const Text("Binary")),
-              ),
-              const SizedBox(
-                height: 10.0,
-              ),
-              resBinImage == null
-                  ? const Text("Upload Image")
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image.file(
-                          File(image!.path),
-                          height: 150.0,
-                          width: 150.0,
-                          semanticLabel: "Original",
-                        ),
-                        Image.memory(
-                          resBinImage!,
-                          height: 150.0,
-                          width: 150.0,
-                          semanticLabel: "Binary",
-                        ),
-                      ],
-                    ),
-              const SizedBox(
-                height: 10.0,
-              ),
-              // SizedBox(
-              //   height: 40.0,
-              //   width: 250.0,
-              //   child: FloatingActionButton.extended(
-              //     heroTag: "addition",
-              //     icon: const Icon(Icons.upload_file),
-              //     onPressed: uploadAdd,
-              //     label: const Text("Add images"),
-              //   ),
-              // ),
-              // const SizedBox(
-              //   height: 10.0,
-              // ),
-              // resAddImage == null
-              //     ? const Text("Upload 2 Images")
-              //     : Image.memory(
-              //         resAddImage!,
-              //         height: 150.0,
-              //         width: 150.0,
-              //         semanticLabel: "Addition",
-              //       ),
-            ],
+      body: SingleChildScrollView(
+        child: Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+                image: AssetImage("assets/logo.png"), scale: 0.25, opacity: 0.25),
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                // const SizedBox(
+                //   height: 10.0,
+                // ),
+                // SizedBox(
+                //   height: 40.0,
+                //   width: 250.0,
+                //   child: FloatingActionButton.extended(
+                //       heroTag: "Matching",
+                //       icon: const Icon(Icons.upload_file),
+                //       onPressed: uploadMatch,
+                //       label: const Text("Macthing")),
+                // ),
+                // const SizedBox(
+                //   height: 10.0,
+                // ),
+                // resMatch == null
+                //     ? const Text("Upload Image")
+                //     : Row(
+                //         mainAxisAlignment: MainAxisAlignment.center,
+                //         children: [
+                //           Image.file(
+                //             File(image!.path),
+                //             height: 150.0,
+                //             width: 150.0,
+                //           ),
+                //           Image.memory(
+                //             resMatch!,
+                //             height: 150.0,
+                //             width: 150.0,
+                //           ),
+                //         ],
+                //       ),
+                const SizedBox(
+                  height: 10.0,
+                ),
+                SizedBox(
+                  height: 40.0,
+                  width: 250.0,
+                  child: FloatingActionButton.extended(
+                      heroTag: "Equalize",
+                      icon: const Icon(Icons.upload_file),
+                      onPressed: uploadEqualize,
+                      label: const Text("Equalize")),
+                ),
+                const SizedBox(
+                  height: 10.0,
+                ),
+                resEqualize == null
+                    ? const Text("Upload Image")
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.file(
+                            File(image!.path),
+                            height: 150.0,
+                            width: 150.0,
+                          ),
+                          Image.memory(
+                            resEqualize!,
+                            height: 150.0,
+                            width: 150.0,
+                          ),
+                        ],
+                      ),
+                const SizedBox(
+                  height: 10.0,
+                ),
+                SizedBox(
+                  height: 40.0,
+                  width: 250.0,
+                  child: FloatingActionButton.extended(
+                      heroTag: "Contrast",
+                      icon: const Icon(Icons.upload_file),
+                      onPressed: uploadContrast,
+                      label: const Text("Contrast Enhancement")),
+                ),
+                const SizedBox(
+                  height: 10.0,
+                ),
+                resEnhance == null
+                    ? const Text("Upload Image")
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.file(
+                            File(image!.path),
+                            height: 150.0,
+                            width: 150.0,
+                          ),
+                          Image.memory(
+                            resEnhance!,
+                            height: 150.0,
+                            width: 150.0,
+                          ),
+                        ],
+                      ),
+                const SizedBox(
+                  height: 10.0,
+                ),
+                SizedBox(
+                  height: 40.0,
+                  width: 250.0,
+                  child: FloatingActionButton.extended(
+                      heroTag: "Gamma",
+                      icon: const Icon(Icons.upload_file),
+                      onPressed: uploadGamma,
+                      label: const Text("Gamma Transform")),
+                ),
+                const SizedBox(
+                  height: 10.0,
+                ),
+                resGamma == null
+                    ? const Text("Upload Image")
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.file(
+                            File(image!.path),
+                            height: 150.0,
+                            width: 150.0,
+                          ),
+                          Image.memory(
+                            resGamma!,
+                            height: 150.0,
+                            width: 150.0,
+                          ),
+                        ],
+                      ),
+                  const SizedBox(
+                  height: 10.0,
+                ),
+                SizedBox(
+                  height: 40.0,
+                  width: 250.0,
+                  child: FloatingActionButton.extended(
+                      heroTag: "Log",
+                      icon: const Icon(Icons.upload_file),
+                      onPressed: uploadLog,
+                      label: const Text("Log Transform")),
+                ),
+                const SizedBox(
+                  height: 10.0,
+                ),
+                resLog == null
+                    ? const Text("Upload Image")
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.file(
+                            File(image!.path),
+                            height: 150.0,
+                            width: 150.0,
+                          ),
+                          Image.memory(
+                            resLog!,
+                            height: 150.0,
+                            width: 150.0,
+                          ),
+                        ],
+                      ),
+              ],
+            ),
           ),
         ),
       ),

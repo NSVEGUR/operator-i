@@ -14,20 +14,13 @@ def rotateImage():
 
     file = request.files['file']
     angle = int(request.form['angle'])
-    point = int(request.form['point'])
     image = np.asarray(bytearray(file.read()), dtype="uint8")
     img = cv2.imdecode(image, cv2.IMREAD_GRAYSCALE)
 
-    if point!=0 and point!=1 and point!=2 and point!=3:
-        return ("CORRECT CENTER KODO MARAYA")
-    elif point == 0:
-        center = (0,0)
-    elif point == 1:
-        center = (0, img.shape[1])
-    elif point == 2:
-        center = (img.shape[0], 0)
-    elif point == 3:
-        center = (img.shape[0], img.shape[1])
+    x = img.shape[0]//2
+    y = img.shape[1]//2
+
+    center = (x,y)
 
     aspect_ratio = img.shape[0] / img.shape[1]
     output_width = 960

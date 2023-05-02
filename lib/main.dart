@@ -1,7 +1,7 @@
 import 'dart:async';
+import 'screens/filter.dart';
 import 'screens/spatial.dart';
 import 'package:flutter/material.dart';
-import 'screens/arithmetic.dart';
 import 'screens/geometric.dart';
 import 'screens/intro.dart';
 
@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData.dark(),
-      home: SplashScreen(),
+      home: const SplashScreen(),
     );
   }
 }
@@ -27,6 +27,7 @@ class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _SplashScreenState createState() => _SplashScreenState();
 }
 
@@ -163,6 +164,22 @@ class _MyHomePageState extends State<MyHomePage> {
                             builder: ((context) => const SpatialScreen())));
                   },
                   label: const Text("Spatial")),
+            ),
+            const SizedBox(
+              height: 20.0,
+            ),
+            SizedBox(
+              height: 50.0,
+              width: 250.0,
+              child: FloatingActionButton.extended(
+                  heroTag: "Filter",
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: ((context) => const Filterscreen())));
+                  },
+                  label: const Text("Filters")),
             ),
           ],
         ),

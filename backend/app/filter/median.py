@@ -1,5 +1,3 @@
-import scipy
-from app.intro import bp as intro
 from flask import request, send_file
 import numpy as np
 import cv2

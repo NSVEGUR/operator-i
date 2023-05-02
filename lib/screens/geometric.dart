@@ -16,6 +16,7 @@ class Geometricscreen extends StatefulWidget {
 class _GeometricscreenState extends State<Geometricscreen> {
   Uint8List? resBinImage;
   Uint8List? resGrayImage;
+  Uint8List? resReflect;
   int rotateAngle = 90;
   int rotateCenter = 0;
   Uint8List? resRotImage;
@@ -52,20 +53,6 @@ class _GeometricscreenState extends State<Geometricscreen> {
                 },
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 8.0,
-                vertical: 16.0,
-              ),
-              child: TextField(
-                decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: "Enter 0 or 1 or 2 or 3"),
-                onSubmitted: (value) {
-                  rotateCenter = int.parse(value);
-                },
-              ),
-            ),
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(context, [rotateAngle, rotateCenter]);
@@ -78,7 +65,6 @@ class _GeometricscreenState extends State<Geometricscreen> {
     ).then((values) {
       Map<String, String> rotateData = {
         "angle": values[0].toString(),
-        "point": values[1].toString(),
       };
       request.fields.addAll(rotateData);
 
@@ -132,8 +118,7 @@ class _GeometricscreenState extends State<Geometricscreen> {
               ),
               child: TextField(
                 decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: "Enter X Factor"),
+                    border: OutlineInputBorder(), hintText: "Enter X Factor"),
                 onSubmitted: (value) {
                   rotateAngle = int.parse(value);
                 },
@@ -146,8 +131,7 @@ class _GeometricscreenState extends State<Geometricscreen> {
               ),
               child: TextField(
                 decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: "Enter Y factor"),
+                    border: OutlineInputBorder(), hintText: "Enter Y factor"),
                 onSubmitted: (value) {
                   rotateCenter = int.parse(value);
                 },
@@ -196,9 +180,10 @@ class _GeometricscreenState extends State<Geometricscreen> {
     }
   }
 
-  Future<void> retTranslate({required File file, required String filename}) async {
-    var request =
-        http.MultipartRequest('POST', Uri.parse("${baseUrl}geometric/translate"));
+  Future<void> retTranslate(
+      {required File file, required String filename}) async {
+    var request = http.MultipartRequest(
+        'POST', Uri.parse("${baseUrl}geometric/translate"));
     Map<String, String> headers = {"Content-type": "multipart/form-data"};
 
     request.files.add(http.MultipartFile(
@@ -282,7 +267,8 @@ class _GeometricscreenState extends State<Geometricscreen> {
           file: pickedImage, filename: pickedImage.path.split("/").last);
     }
   }
-    Future<void> retShear({required File file, required String filename}) async {
+
+  Future<void> retShear({required File file, required String filename}) async {
     var request =
         http.MultipartRequest('POST', Uri.parse("${baseUrl}geometric/shear"));
     Map<String, String> headers = {"Content-type": "multipart/form-data"};
@@ -364,7 +350,44 @@ class _GeometricscreenState extends State<Geometricscreen> {
     if (image != null) {
       File pickedImage = File(image!.path);
 
-      await retTranslate(
+      await retShear(
+          file: pickedImage, filename: pickedImage.path.split("/").last);
+    }
+  }
+
+  Future<int> retReflection(
+      {required File file, required String filename}) async {
+    ///MultiPart request
+    var request = http.MultipartRequest(
+      'POST',
+      Uri.parse("${baseUrl}geometric/reflect"),
+    );
+    Map<String, String> headers = {"Content-type": "multipart/form-data"};
+    request.files.add(
+      http.MultipartFile(
+        'file',
+        file.readAsBytes().asStream(),
+        file.lengthSync(),
+        filename: filename,
+      ),
+    );
+    request.headers.addAll(headers);
+    print("request: $request");
+    final resStrem = await request.send();
+    final res = await http.Response.fromStream(resStrem);
+    setState(() {
+      resReflect = res.bodyBytes;
+    });
+    //print("This is response:" + resStrem.toString());
+    return resStrem.statusCode;
+  }
+
+  uploadReflection() async {
+    image = await ImagePicker().pickImage(source: ImageSource.gallery);
+
+    if (image != null) {
+      File pickedImage = File(image!.path);
+      await retReflection(
           file: pickedImage, filename: pickedImage.path.split("/").last);
     }
   }
@@ -408,50 +431,46 @@ class _GeometricscreenState extends State<Geometricscreen> {
                           File(image!.path),
                           height: 150.0,
                           width: 150.0,
-                          semanticLabel: "Original",
                         ),
                         Image.memory(
                           resGrayImage!,
                           height: 150.0,
                           width: 150.0,
-                          semanticLabel: "Gray",
                         ),
                       ],
                     ),
-              const SizedBox(
-                height: 10.0,
-              ),
-              SizedBox(
-                height: 40.0,
-                width: 250.0,
-                child: FloatingActionButton.extended(
-                    heroTag: "binary",
-                    icon: const Icon(Icons.upload_file),
-                    onPressed: uploadScale,
-                    label: const Text("Scale")),
-              ),
-              const SizedBox(
-                height: 10.0,
-              ),
-              resBinImage == null
-                  ? const Text("Upload Image")
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image.file(
-                          File(image!.path),
-                          height: 150.0,
-                          width: 150.0,
-                          semanticLabel: "Original",
-                        ),
-                        Image.memory(
-                          resBinImage!,
-                          height: 150.0,
-                          width: 150.0,
-                          semanticLabel: "Binary",
-                        ),
-                      ],
-                    ),
+              // const SizedBox(
+              //   height: 10.0,
+              // ),
+              // SizedBox(
+              //   height: 40.0,
+              //   width: 250.0,
+              //   child: FloatingActionButton.extended(
+              //       heroTag: "binary",
+              //       icon: const Icon(Icons.upload_file),
+              //       onPressed: uploadScale,
+              //       label: const Text("Scale")),
+              // ),
+              // const SizedBox(
+              //   height: 10.0,
+              // ),
+              // resBinImage == null
+              //     ? const Text("Upload Image")
+              //     : Row(
+              //         mainAxisAlignment: MainAxisAlignment.center,
+              //         children: [
+              //           Image.file(
+              //             File(image!.path),
+              //             height: 150.0,
+              //             width: 150.0,
+              //           ),
+              //           Image.memory(
+              //             resBinImage!,
+              //             height: 150.0,
+              //             width: 150.0,
+              //           ),
+              //         ],
+              //       ),
               const SizedBox(
                 height: 10.0,
               ),
@@ -482,11 +501,10 @@ class _GeometricscreenState extends State<Geometricscreen> {
                           resRotImage!,
                           height: 150.0,
                           width: 150.0,
-                          semanticLabel: "Binary",
                         ),
                       ],
                     ),
-               SizedBox(
+              SizedBox(
                 height: 40.0,
                 width: 250.0,
                 child: FloatingActionButton.extended(
@@ -499,7 +517,7 @@ class _GeometricscreenState extends State<Geometricscreen> {
               const SizedBox(
                 height: 10.0,
               ),
-              resRotImage == null
+              resShearImage == null
                   ? const Text("Upload Image")
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -510,13 +528,44 @@ class _GeometricscreenState extends State<Geometricscreen> {
                           width: 150.0,
                         ),
                         Image.memory(
-                          resRotImage!,
+                          resShearImage!,
                           height: 150.0,
                           width: 150.0,
-                          semanticLabel: "Binary",
                         ),
                       ],
-                    )
+                    ),
+              const SizedBox(
+                height: 10.0,
+              ),
+              SizedBox(
+                height: 40.0,
+                width: 250.0,
+                child: FloatingActionButton.extended(
+                    heroTag: "Contrast",
+                    icon: const Icon(Icons.upload_file),
+                    onPressed: uploadReflection,
+                    label: const Text("Reflect")),
+              ),
+              const SizedBox(
+                height: 10.0,
+              ),
+              resReflect == null
+                  ? const Text("Upload Image")
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image.file(
+                          File(image!.path),
+                          height: 150.0,
+                          width: 150.0,
+                        ),
+                        Image.memory(
+                          resReflect!,
+                          height: 150.0,
+                          width: 150.0,
+                        ),
+                      ],
+                    ),
             ],
           ),
         ),
